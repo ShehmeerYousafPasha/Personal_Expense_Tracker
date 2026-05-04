@@ -575,7 +575,7 @@ class _TransactionTile extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(10),
         child: Row(
           children: [
             Container(
@@ -596,7 +596,7 @@ class _TransactionTile extends StatelessWidget {
                 color: accentColor,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -627,18 +627,16 @@ class _TransactionTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
                   Text(
                     transaction.note.isNotEmpty ? transaction.note : 'No note added',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: const Color(0xFF5A6672),
                         ),
                   ),
-                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.calendar_month_rounded, size: 16, color: Colors.grey.shade600),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 2),
                       Text(
                         '$dateText • $timeText',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -646,13 +644,22 @@ class _TransactionTile extends StatelessWidget {
                             ),
                       ),
                       const Spacer(),
-                      TextButton(
+                      IconButton(
                         onPressed: onEdit,
-                        child: const Text('Edit'),
+                        icon: const Icon(Icons.edit_rounded, size: 22),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        color: Colors.blueGrey,
                       ),
-                      TextButton(
+                      const SizedBox(width: 4),
+                      IconButton(
                         onPressed: onDelete,
-                        child: const Text('Delete'),
+                        icon: const Icon(Icons.delete_rounded, size: 22),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        color: Colors.redAccent,
                       ),
                     ],
                   ),
