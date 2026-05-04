@@ -25,6 +25,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
   final LocalStore _store = LocalStore();
   final NumberFormat _moneyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 0);
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
+  final DateFormat _timeFormat = DateFormat('hh:mm a');
 
   List<ExpenseTransaction> _transactions = [];
   List<String> _customCategories = [];
@@ -95,7 +96,9 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
       return;
     }
 
-    if (!_allCategories.contains(result.category)) {
+    // Only add custom categories for expenses, not for income sources
+    if (result.type == TransactionType.expense &&
+        !_allCategories.contains(result.category)) {
       setState(() {
         _customCategories.add(result.category);
       });
@@ -367,6 +370,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
                             child: _TransactionTile(
                               transaction: tx,
                               dateText: _dateFormat.format(tx.date),
+                              timeText: _timeFormat.format(tx.date),
                               moneyFormat: _moneyFormat,
                               onEdit: () => _showTransactionForm(existing: tx),
                               onDelete: () => _confirmDelete(tx),
@@ -551,6 +555,7 @@ class _TransactionTile extends StatelessWidget {
   const _TransactionTile({
     required this.transaction,
     required this.dateText,
+    required this.timeText,
     required this.moneyFormat,
     required this.onEdit,
     required this.onDelete,
@@ -558,6 +563,7 @@ class _TransactionTile extends StatelessWidget {
 
   final ExpenseTransaction transaction;
   final String dateText;
+  final String timeText;
   final NumberFormat moneyFormat;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -634,7 +640,7 @@ class _TransactionTile extends StatelessWidget {
                       Icon(Icons.calendar_month_rounded, size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 6),
                       Text(
-                        dateText,
+                        '$dateText • $timeText',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: const Color(0xFF5A6672),
                             ),

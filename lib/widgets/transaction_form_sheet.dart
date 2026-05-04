@@ -25,6 +25,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
 
   late TransactionType _type;
   late DateTime _date;
+  late TimeOfDay _time;
   String? _selectedCategory;
   bool _useCustomCategory = false;
 
@@ -38,6 +39,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     _customCategoryController = TextEditingController();
     _type = widget.initial?.type ?? TransactionType.expense;
     _date = widget.initial?.date ?? DateTime.now();
+    _time = TimeOfDay.fromDateTime(widget.initial?.date ?? DateTime.now());
 
     if (widget.initial == null) {
       // For new transactions, use custom category for income, regular dropdown for expenses
@@ -80,6 +82,15 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     }
   }
 
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(context: context, initialTime: _time);
+    if (picked != null) {
+      setState(() {
+        _time = picked;
+      });
+    }
+  }
+
   void _save() {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -89,11 +100,19 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
         ? _customCategoryController.text.trim()
         : (_selectedCategory ?? '').trim();
 
+    final dateTime = DateTime(
+      _date.year,
+      _date.month,
+      _date.day,
+      _time.hour,
+      _time.minute,
+    );
+
     final tx = ExpenseTransaction(
       id: widget.initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
       amount: int.parse(_amountController.text.trim()).toDouble(),
       category: category,
-      date: _date,
+      date: dateTime,
       note: _noteController.text.trim(),
       type: _type,
     );
@@ -243,10 +262,24 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
                 maxLines: 2,
               ),
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _pickDate,
-                icon: const Icon(Icons.calendar_month),
-                label: Text(DateFormat('dd MMM yyyy').format(_date)),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickDate,
+                      icon: const Icon(Icons.calendar_month),
+                      label: Text(DateFormat('dd MMM yyyy').format(_date)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickTime,
+                      icon: const Icon(Icons.access_time),
+                      label: Text(_time.format(context)),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               SizedBox(
