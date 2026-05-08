@@ -198,3 +198,7 @@ The project includes platform folders for:
 ## License
 
 This project is currently private and intended for learning and portfolio use.
+
+## APK Link
+
+https://www.upload-apk.com/en/0CTmsFTm7UWyOrL
