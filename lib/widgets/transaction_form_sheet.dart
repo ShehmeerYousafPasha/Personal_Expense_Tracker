@@ -29,6 +29,30 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
   String? _selectedCategory;
   bool _useCustomCategory = false;
 
+  DateTime get _selectedDateTime =>
+      DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
+
+  bool _isToday(DateTime value, DateTime reference) {
+    return value.year == reference.year &&
+        value.month == reference.month &&
+        value.day == reference.day;
+  }
+
+  void _showFutureDateTimeMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Date and time cannot be in the future.')),
+    );
+  }
+
+  String _normalizeCategory(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return trimmed;
+    }
+
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -69,22 +93,40 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
   }
 
   Future<void> _pickDate() async {
+    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _date,
+      initialDate: _date.isAfter(now) ? now : _date,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      lastDate: now,
     );
     if (picked != null) {
       setState(() {
         _date = picked;
+        if (_selectedDateTime.isAfter(now)) {
+          _time = TimeOfDay.fromDateTime(now);
+        }
       });
     }
   }
 
   Future<void> _pickTime() async {
+    final now = DateTime.now();
     final picked = await showTimePicker(context: context, initialTime: _time);
     if (picked != null) {
+      final selectedDateTime = DateTime(
+        _date.year,
+        _date.month,
+        _date.day,
+        picked.hour,
+        picked.minute,
+      );
+
+      if (_isToday(_date, now) && selectedDateTime.isAfter(now)) {
+        _showFutureDateTimeMessage();
+        return;
+      }
+
       setState(() {
         _time = picked;
       });
@@ -97,7 +139,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     }
 
     final category = _useCustomCategory
-        ? _customCategoryController.text.trim()
+        ? _normalizeCategory(_customCategoryController.text)
         : (_selectedCategory ?? '').trim();
 
     final dateTime = DateTime(
@@ -107,6 +149,11 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       _time.hour,
       _time.minute,
     );
+
+    if (dateTime.isAfter(DateTime.now())) {
+      _showFutureDateTimeMessage();
+      return;
+    }
 
     final tx = ExpenseTransaction(
       id: widget.initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
@@ -128,6 +175,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + viewInsets.bottom),
       child: Form(
         key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -198,6 +246,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
               if (_type == TransactionType.income)
                 TextFormField(
                   controller: _customCategoryController,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Income source',
                     hintText: 'e.g., Salary, Freelance, Bonus',
@@ -214,6 +263,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
               if (_type == TransactionType.expense && _useCustomCategory)
                 TextFormField(
                   controller: _customCategoryController,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     labelText: 'Custom category',
                     border: OutlineInputBorder(),

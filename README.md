@@ -201,4 +201,4 @@ This project is currently private and intended for learning and portfolio use.
 
 ## APK Link
 
-https://www.upload-apk.com/en/0CTmsFTm7UWyOrL
+https://www.upload-apk.com/zOk65um5km3s9rn
